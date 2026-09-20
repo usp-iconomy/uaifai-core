@@ -93,30 +93,16 @@ test/
 
 ### Configurar variáveis de ambiente
 
+O endpoint `sepolia` já está configurado em `foundry.toml` (via Infura). Basta preencher
+o `.env` na raiz do repo:
+
 ```bash
 cp .env.example .env
 # Editar .env com:
-SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/<SUA_API_KEY>
+API_KEY_INFURA=<SUA_API_KEY_INFURA>          # usado pelo rpc_endpoints.sepolia
+API_KEY_ETHERSCAN=<SUA_API_KEY_ETHERSCAN>    # usado pelo etherscan.sepolia (verificação)
 DEPLOYER_PRIVATE_KEY=0x<CHAVE_PRIVADA_TESTNET>
 USP_ADMIN_ADDRESS=0x<ENDERECO_ADMIN_USP>
-ETHERSCAN_API_KEY=<PARA_VERIFICACAO>
-```
-
-### foundry.toml — adicionar Sepolia
-
-```toml
-[profile.default]
-src = "src"
-out = "out"
-libs = ["lib", "node_modules"]
-
-[rpc_endpoints]
-sepolia = "${SEPOLIA_RPC_URL}"
-polygon = "https://polygon-rpc.com"
-amoy    = "https://rpc-amoy.polygon.technology"
-
-[etherscan]
-sepolia = { key = "${ETHERSCAN_API_KEY}", chain = 11155111 }
 ```
 
 ### Rodar testes locais
@@ -160,7 +146,7 @@ forge script script/DeployUAIFAI.s.sol \
 ```bash
 forge verify-contract <DEPLOYED_ADDRESS> UAIFAIToken \
   --chain sepolia \
-  --etherscan-api-key $ETHERSCAN_API_KEY
+  --etherscan-api-key $API_KEY_ETHERSCAN
 ```
 
 ---
@@ -175,7 +161,7 @@ cast send <TOKEN_ADDR> \
   "sendWithMessage(address,uint256,string,uint8)" \
   <BOB_ADDR> 50000000000000000000 "Obrigado pela aula incrivel!" 1 \
   --private-key $ALICE_KEY \
-  --rpc-url $SEPOLIA_RPC_URL
+  --rpc-url sepolia
 ```
 
 ### 2. Criar Distribution Code para piloto
@@ -190,7 +176,7 @@ cast send <TOKEN_ADDR> \
   "createDistributionCode(bytes32,uint256,uint256,uint256,uint256,string)" \
   $HASH 150000000000000000000 20 $(date +%s) $(($(date +%s) + 2592000)) "CURSO-01" \
   --private-key $ADMIN_KEY \
-  --rpc-url $SEPOLIA_RPC_URL
+  --rpc-url sepolia
 ```
 
 ### 3. Resgatar bolsa (novo membro)
@@ -200,7 +186,7 @@ cast send <TOKEN_ADDR> \
   "redeemDistributionCode(uint256,string)" \
   1 "UAIFAI-PILOTO-2026" \
   --private-key $NEWCOMER_KEY \
-  --rpc-url $SEPOLIA_RPC_URL
+  --rpc-url sepolia
 ```
 
 ### 4. Emitir SBT quilombola com GPS
@@ -213,7 +199,7 @@ cast send <SBT_REGISTRY_ADDR> \
   '{"title":"Assembleia Kalunga","territory":"Quilombo Kalunga","gps":"-13.5,-47.2","date":"2026-06-15"}' \
   true \
   --private-key $ADMIN_KEY \
-  --rpc-url $SEPOLIA_RPC_URL
+  --rpc-url sepolia
 ```
 
 ### 5. Aplicar decaimento em batch (keeper semanal)
@@ -223,7 +209,7 @@ cast send <TOKEN_ADDR> \
   "applyDecayBatch(address[])" \
   "[<ADDR1>,<ADDR2>,<ADDR3>]" \
   --private-key $KEEPER_KEY \
-  --rpc-url $SEPOLIA_RPC_URL
+  --rpc-url sepolia
 ```
 
 ---
