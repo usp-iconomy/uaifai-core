@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import {Script, console} from "forge-std/Script.sol";
 import {UAIFAIToken} from "../src/UAIFAIToken.sol";
+import {UAIFAISBTRegistry} from "../src/UAIFAISBTRegistry.sol";
 
 /**
  * @title DeployUAIFAI
@@ -41,8 +42,11 @@ contract DeployUAIFAI is Script {
             admin
         );
 
+        UAIFAISBTRegistry sbtRegistry = new UAIFAISBTRegistry(admin);
+
         console.log("=== UAIFAI Token deployado ===");
         console.log("Endereco:        ", address(token));
+        console.log("SBT Registry:    ", address(sbtRegistry));
         console.log("Admin/Owner:     ", admin);
         console.log("Supply inicial:  ", INITIAL_SUPPLY / 1e18, "UAIFAI");
         console.log("Rede:            Sepolia (chain-id 11155111)");
@@ -51,7 +55,7 @@ contract DeployUAIFAI is Script {
         console.log("1. Configurar taxas: setDecayRates(1000, 200)  // 10% padrao, 2% quilombola");
         console.log("2. Criar Distribution Codes para piloto");
         console.log("3. Ativar membros quilombola: activateQuilombola(address)");
-        console.log("4. Emitir primeiros SBTs apos conclusao de cursos");
+        console.log("4. Emitir primeiros SBTs apos conclusao de cursos: sbtRegistry.issueSBT(...)");
 
         vm.stopBroadcast();
     }

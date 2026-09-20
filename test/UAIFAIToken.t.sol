@@ -34,13 +34,8 @@ contract UAIFAITokenTest is Test {
         vm.stopPrank();
     }
 
-    // ─────────────────────────────────────────
     //  ARIGATO CREATION
-    // ─────────────────────────────────────────
-
     function test_SendWithMessage_ArigatoCreation() public {
-        // alice (saldo 200) envia 50 para bob
-        // bonus = 50 * 50 / 200 = 12.5
         uint256 amount = 50 ether;
         uint256 expectedBonus = (amount * amount) / ALICE_START; // 12.5 ether
 
@@ -108,10 +103,7 @@ contract UAIFAITokenTest is Test {
         assertFalse(fails, "Nao deve atender criterio de 100");
     }
 
-    // ─────────────────────────────────────────
-    //  Decaimento
-    // ─────────────────────────────────────────
-
+   //  Decaimento
     function test_Decay_ReducesSaldoAfterInterval() public {
         // Avança 7 dias
         vm.warp(block.timestamp + 7 days + 1);
@@ -160,49 +152,7 @@ contract UAIFAITokenTest is Test {
         assertEq(token.balanceOf(alice), balBefore, "Decaimento nao deve ocorrer antes do intervalo");
     }
 
-    // ─────────────────────────────────────────
-    //  SBT (Soulbound Token)
-    // ─────────────────────────────────────────
-
-    function test_IssueSBT() public {
-        vm.prank(admin);
-        uint256 sbtId = token.issueSBT(
-            alice,
-            "CURSO-BLC-01",
-            '{"title":"Blockchain Avancado","territory":"","gps":"","date":"2026-06-01"}',
-            false
-        );
-
-        assertEq(sbtId, 1);
-        assertEq(token.sbtHolder(sbtId), alice);
-        assertTrue(token.hasSBTForCourse(alice, "CURSO-BLC-01"));
-        assertFalse(token.hasSBTForCourse(bob, "CURSO-BLC-01"));
-    }
-
-    function test_IssueSBT_WithGPS_Quilombola() public {
-        vm.prank(admin);
-        uint256 sbtId = token.issueSBT(
-            quilombo,
-            "EVENTO-QUILOMBO-KALUNGA-01",
-            '{"title":"Assembleia Kalunga","territory":"Quilombo Kalunga","gps":"-13.5,-47.2","date":"2026-06-15","organizer":"Liderana Local"}',
-            true
-        );
-
-        UAIFAIToken.SBT[] memory sbts = token.getSBTs(quilombo);
-        assertEq(sbts.length, 1);
-        assertTrue(sbts[0].hasGPS);
-        assertEq(sbts[0].courseId, "EVENTO-QUILOMBO-KALUNGA-01");
-    }
-
-    function test_RevertIf_NonOwnerIssuesSBT() public {
-        vm.prank(alice);
-        vm.expectRevert(); // OwnableUnauthorizedAccount
-        token.issueSBT(bob, "CURSO", "metadata", false);
-    }
-
-    // ─────────────────────────────────────────
     //  Distribution Code
-    // ─────────────────────────────────────────
 
     function test_CreateAndRedeemDistributionCode() public {
         string memory plainCode = "QUILOMBO-KALUNGA-2026";
@@ -260,9 +210,7 @@ contract UAIFAITokenTest is Test {
         token.redeemDistributionCode(codeId, "CODIGO-VENCIDO");
     }
 
-    // ─────────────────────────────────────────
     //  Quilombola
-    // ─────────────────────────────────────────
 
     function test_ActivateQuilombola() public {
         vm.prank(admin);
