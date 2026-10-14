@@ -1,0 +1,16 @@
+{
+  "admin": "0x9F58BEF4f9a35dcbafd0875A89E303D969111BA6",
+  "blockNumber": 11914612,
+  "chainId": 11155111,
+  "decayIntervalSeconds": 604800,
+  "decayRateDefaultBps": 1000,
+  "decayRateQuilombolaBps": 200,
+  "deployer": "0x151022BcefAB865CC661fbb43D27C1f21C1eD3e7",
+  "initialSupply": "1000000000000000000000000",
+  "network": "sepolia",
+  "sbtRegistry": "0x6C6DE72E8098f26f30C6E89028c2eBfB7590e7F6",
+  "sbtRegistryTxHash": "0x1053d67ee44c24a4ede7d572b3af40fa1fd49a291842daeaf5a2826615d96d37",
+  "tokenVersion": "1.1.0-sepolia-uaifai",
+  "uaifaiToken": "0xeCc07c56B92eb6FcF1Fe276d306D236285721F5B",
+  "uaifaiTokenTxHash": "0xfc7722639b84b871a8e74b19613d7b0f3c5b1cd943b425e16c3935e0f1865758"
+}

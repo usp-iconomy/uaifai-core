@@ -29,9 +29,16 @@ contract DeployUAIFAI is Script {
     // Emissão inicial: 1.000.000 tokens (com 18 decimais)
     uint256 constant INITIAL_SUPPLY = 1_000_000 * 1e18;
 
+    // Configuração padrão de decaimento (IMPLEMENTATION.md §7.A1)
+    uint256 constant DECAY_RATE_DEFAULT_BPS = 1000;      // 10%
+    uint256 constant DECAY_RATE_QUILOMBOLA_BPS = 200;    // 2%
+    uint256 constant DECAY_INTERVAL = 7 days;
+
     function run() external {
-        address admin = vm.envOr("USP_ADMIN_ADDRESS", msg.sender);
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
+        address deployer = vm.addr(deployerKey);
+        // Default: deployer == admin (piloto Sepolia).
+        address admin = vm.envOr("USP_ADMIN_ADDRESS", deployer);
 
         vm.startBroadcast(deployerKey);
 
@@ -44,19 +51,58 @@ contract DeployUAIFAI is Script {
 
         UAIFAISBTRegistry sbtRegistry = new UAIFAISBTRegistry(admin);
 
+        // Configuração administrativa (A1 DoD).
+        // onlyOwner: só funciona se o deployer == admin. Se admin for outro
+        // endereço, as duas chamadas abaixo precisam ser feitas por ele depois.
+        if (admin == deployer) {
+            token.setDecayRates(DECAY_RATE_DEFAULT_BPS, DECAY_RATE_QUILOMBOLA_BPS);
+            token.setDecayInterval(DECAY_INTERVAL);
+        }
+
+        vm.stopBroadcast();
+
         console.log("=== UAIFAI Token deployado ===");
         console.log("Endereco:        ", address(token));
         console.log("SBT Registry:    ", address(sbtRegistry));
         console.log("Admin/Owner:     ", admin);
         console.log("Supply inicial:  ", INITIAL_SUPPLY / 1e18, "UAIFAI");
-        console.log("Rede:            Sepolia (chain-id 11155111)");
-        console.log("");
-        console.log("Proximos passos:");
-        console.log("1. Configurar taxas: setDecayRates(1000, 200)  // 10% padrao, 2% quilombola");
-        console.log("2. Criar Distribution Codes para piloto");
-        console.log("3. Ativar membros quilombola: activateQuilombola(address)");
-        console.log("4. Emitir primeiros SBTs apos conclusao de cursos: sbtRegistry.issueSBT(...)");
+        console.log("Decay default:   ", DECAY_RATE_DEFAULT_BPS, "bps");
+        console.log("Decay quilombola:", DECAY_RATE_QUILOMBOLA_BPS, "bps");
+        console.log("Decay interval:  ", DECAY_INTERVAL, "segundos");
+        console.log("Rede chain-id:   ", block.chainid);
+        console.log("Bloco:           ", block.number);
 
-        vm.stopBroadcast();
+        _writeDeployment(address(token), address(sbtRegistry), admin);
+
+        if (admin != deployer) {
+            console.log("");
+            console.log("ATENCAO: admin != deployer. Rode como admin:");
+            console.log("  cast send <token> 'setDecayRates(uint256,uint256)' 1000 200");
+            console.log("  cast send <token> 'setDecayInterval(uint256)' 604800");
+        }
+    }
+
+    function _writeDeployment(address token, address sbtRegistry, address admin) internal {
+        // Nome do arquivo = <chain-id>.json (sepolia = 11155111).
+        // Mantém versionado para a API consumir (IMPLEMENTATION.md §7.A1).
+        string memory root = "deployment";
+        vm.serializeUint(root, "chainId", block.chainid);
+        vm.serializeUint(root, "blockNumber", block.number);
+        vm.serializeAddress(root, "admin", admin);
+        vm.serializeAddress(root, "uaifaiToken", token);
+        vm.serializeAddress(root, "sbtRegistry", sbtRegistry);
+        vm.serializeUint(root, "decayRateDefaultBps", DECAY_RATE_DEFAULT_BPS);
+        vm.serializeUint(root, "decayRateQuilombolaBps", DECAY_RATE_QUILOMBOLA_BPS);
+        vm.serializeUint(root, "decayIntervalSeconds", DECAY_INTERVAL);
+        vm.serializeUint(root, "initialSupply", INITIAL_SUPPLY);
+        string memory json = vm.serializeString(root, "tokenVersion", UAIFAIToken(token).version());
+
+        string memory path = string.concat(
+            "deployments/",
+            vm.toString(block.chainid),
+            ".json"
+        );
+        vm.writeJson(json, path);
+        console.log("Deployment gravado em:", path);
     }
 }
